@@ -1,6 +1,6 @@
 <h1 align="center">Awake</h1>
 
-<p align="center">A 370 KB Mac app that keeps <b>Claude Desktop</b> working after you close the lid.</p>
+<p align="center">A 383 KB Mac app that keeps <b>Claude Desktop</b> working after you close the lid.</p>
 
 <p align="center">
   <img src="docs/screenshots/awake-active.png" width="320" alt="Awake, keeping the Mac awake">
@@ -85,7 +85,7 @@ It lives in the menu bar too — closing the window leaves it running, and the b
 
 The app it is protecting is the one that should get the CPU, so Awake gets out of the way:
 
-- **370 KB** universal binary, no frameworks bundled, no dependencies.
+- **383 KB** universal binary, no frameworks bundled, no dependencies.
 - Plain AppKit window hosting one SwiftUI view — no scene graph, no storyboard, no image assets. The MacBook is drawn as vectors in a single `Canvas` pass and never animates.
 - **No polling.** Power changes arrive on an IOKit run-loop source, app launches and quits arrive as workspace notifications. The one timer only ticks the session clock, at 1 s while you are looking at the window and 30 s when you are not.
 

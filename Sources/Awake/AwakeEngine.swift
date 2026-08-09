@@ -113,6 +113,15 @@ final class AwakeEngine: ObservableObject {
     /// True while the lid switch is ours to put back.
     var lidGuardNeedsRestore: Bool { lidGuardIsOurs }
 
+    /// The version of `shutDown()` that is safe from any thread: it releases
+    /// the assertions and puts the lid switch back without touching AppKit,
+    /// for when a signal arrives while the main thread sits behind a sheet.
+    func emergencyShutDown() {
+        systemAssertion.release()
+        displayAssertion.release()
+        if lidGuardIsOurs { LidGuard.setFromAnyThread(false) }
+    }
+
     /// Undo the lid switch — on quit, on request, or after a crash left it on.
     @discardableResult
     func restoreLidGuard() -> Bool {

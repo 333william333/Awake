@@ -65,6 +65,15 @@ enum LidGuard {
         return .failure(.failed(text))
     }
 
+    /// Off-main-thread variant for the termination path, where the main thread
+    /// may be sitting in a modal run loop and cannot run `NSAppleScript`.
+    @discardableResult
+    static func setFromAnyThread(_ enabled: Bool) -> Bool {
+        if isEngaged == enabled { return true }
+        let command = "/usr/bin/pmset -a disablesleep \(enabled ? "1" : "0")"
+        return runViaOSAScript("do shell script \"\(command)\" with administrator privileges")
+    }
+
     private static func verify(_ expected: Bool) -> Result<Void, Failure> {
         isEngaged == expected ? .success(()) : .failure(.failed("The system did not accept the change."))
     }

@@ -159,14 +159,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// `SIGTERM` arrives on log-out and on `killall`; make sure the lid switch
     /// and the assertions come back down before we go.
+    ///
+    /// Deliberately handled off the main thread. A sheet puts the main run loop
+    /// into a modal mode that does not drain the main queue, so a main-queue
+    /// handler would never fire — and because the raw signal is ignored, the
+    /// process would have become unkillable with the Options panel open.
     private func trapTerminationSignals() {
+        let queue = DispatchQueue(label: "com.williamlabs.awake.signals")
         for number in [SIGTERM, SIGINT, SIGHUP] {
             signal(number, SIG_IGN)
-            let source = DispatchSource.makeSignalSource(signal: number, queue: .main)
+            let source = DispatchSource.makeSignalSource(signal: number, queue: queue)
             source.setEventHandler { [weak self] in
-                self?.isTerminatingFromSignal = true
-                self?.engine.shutDown()
-                NSApp.terminate(nil)
+                guard let self else { exit(0) }
+                self.isTerminatingFromSignal = true
+                self.engine.emergencyShutDown()
+                DispatchQueue.main.async { NSApp.terminate(nil) }
+                // Cleanup is already done; never outlive the request to quit.
+                queue.asyncAfter(deadline: .now() + 2) { exit(0) }
             }
             source.resume()
             signalSources.append(source)

@@ -152,8 +152,18 @@ struct OptionsView: View {
                 .padding(.bottom, 14)
 
             toggle("Stay awake with the lid closed",
-                   note: "Asks for your password. Restored the moment you turn Awake off.",
+                   note: engine.isPasswordless
+                       ? "Restored the moment you turn Awake off."
+                       : "Asks for your password. Restored the moment you turn Awake off.",
                    isOn: $engine.guardLidClose)
+
+            toggle("Stop asking for my password",
+                   note: """
+                       Allows this Mac to change the lid-sleep setting — and \
+                       nothing else — without a prompt. Asks once to set it up.
+                       """,
+                   isOn: Binding(get: { engine.isPasswordless },
+                                 set: { engine.setPasswordless($0) }))
 
             toggle("Keep the display on",
                    note: "Leave off to save power — the Mac stays awake either way.",

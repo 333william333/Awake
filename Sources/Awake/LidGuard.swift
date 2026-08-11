@@ -44,6 +44,11 @@ enum LidGuard {
     static func set(_ enabled: Bool) -> Result<Void, Failure> {
         if isEngaged == enabled { return .success(()) }
 
+        // No dialog at all if the user installed the sudoers rule.
+        if PasswordlessRule.isInstalled, PasswordlessRule.apply(disableSleep: enabled) {
+            return verify(enabled)
+        }
+
         let command = "/usr/bin/pmset -a disablesleep \(enabled ? "1" : "0")"
         let source = "do shell script \"\(command)\" with administrator privileges"
 
@@ -70,6 +75,7 @@ enum LidGuard {
     @discardableResult
     static func setFromAnyThread(_ enabled: Bool) -> Bool {
         if isEngaged == enabled { return true }
+        if PasswordlessRule.isInstalled, PasswordlessRule.apply(disableSleep: enabled) { return true }
         let command = "/usr/bin/pmset -a disablesleep \(enabled ? "1" : "0")"
         return runViaOSAScript("do shell script \"\(command)\" with administrator privileges")
     }

@@ -15,6 +15,7 @@ final class AwakeEngine: ObservableObject {
     @Published private(set) var powerSummary = "Adapter"
     @Published private(set) var elapsed: TimeInterval = 0
     @Published private(set) var notice: String?
+    @Published private(set) var isPasswordless = PasswordlessRule.isInstalled
     @Published var showingOptions = false
 
     // MARK: Preferences
@@ -136,6 +137,18 @@ final class AwakeEngine: ObservableObject {
             lidIsGuarded = LidGuard.isEngaged
             return false
         }
+    }
+
+    /// Installs or removes the sudoers rule. Costs one password either way, and
+    /// is the last one you are asked for while it is in place.
+    func setPasswordless(_ enabled: Bool) {
+        switch enabled ? PasswordlessRule.install() : PasswordlessRule.remove() {
+        case .success:
+            notice = nil
+        case .failure(let failure):
+            notice = failure.message
+        }
+        isPasswordless = PasswordlessRule.isInstalled
     }
 
     // MARK: Environment
